@@ -1,12 +1,11 @@
-import { Fragment } from 'react';
 import Head from 'next/head';
-import { MongoClient } from 'mongodb';
 
+import connectDB from '../lib/connect-db';
 import MeetupList from '../components/meetups/MeetupList';
 
 const HomePage = (props) => {
   return (
-    <Fragment>
+    <>
       <Head>
        <title>React Meetups</title>
        <meta
@@ -15,7 +14,7 @@ const HomePage = (props) => {
        />
       </Head>
       <MeetupList meetups={props.meetups} />
-    </Fragment>
+    </>
   );
 };
 
@@ -33,16 +32,10 @@ const HomePage = (props) => {
 // };
 
 export const getStaticProps = async () => {
-  const client = await MongoClient.connect(
-    'mongodb+srv://Quimey:Jhlukhrtjncb.927@cluster0.ulvjj2s.mongodb.net/meetups?retryWrites=true&w=majority'
-  );
-  const db = client.db();
+  const [meetupCollection, closeClient] = await connectDB();
+  const meetups = await meetupCollection.find().toArray();
 
-  const meetupsCollection = db.collection('meetups');
-
-  const meetups = await meetupsCollection.find().toArray();
-
-  client.close();
+  closeClient();
 
   return {
     props: {
